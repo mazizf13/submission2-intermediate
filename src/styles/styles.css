@@ -33,7 +33,7 @@ body {
 
 /* Header */
 header {
-  background-color: #4f46e5;
+  background-color: var(--primary-color);
   color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
@@ -440,7 +440,7 @@ header {
 .story-item__read-more {
   align-self: flex-start;
   padding: 0.5rem 1rem;
-  background-color: #4f46e5;
+  background-color: var(--primary-color);
   color: white;
   text-decoration: none;
   border-radius: 8px;
@@ -456,7 +456,7 @@ header {
 }
 
 .notification-btn {
-  margin-left: 1rem;
+  margin-top: 1rem;
 }
 
 /* === AddPage === */
@@ -594,7 +594,7 @@ header {
 }
 
 /* === Details Page === */
-.details-container {
+.story-details-container {
   padding: 2rem 1rem;
 }
 
@@ -610,7 +610,7 @@ header {
 }
 
 .back-button:hover {
-  color: #007bff;
+  color: var(--primary-color);
 }
 
 .details {
@@ -622,30 +622,33 @@ header {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
-.details-title {
+.story-details-title {
   font-size: 1.75rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
 
-.details__meta {
+.story-details__meta {
   font-size: 0.9rem;
   color: #777;
   margin-bottom: 1.5rem;
 }
 
-.details__image-container {
+.story-details__image-container {
   width: 100%;
   margin-bottom: 2rem;
+  overflow: hidden;
 }
 
-.details__image {
+.story-details__image {
   width: 100%;
-  border-radius: 0.75rem;
+  height: auto;
+  display: block;
+  border-radius: 0.5rem;
   object-fit: cover;
 }
 
-.details__description {
+.story-details__description {
   font-size: 1rem;
   line-height: 1.6;
   color: #444;
@@ -669,11 +672,12 @@ header {
 }
 
 .story-details__actions {
-  padding: 24px 32px;
-  border-top: 1px solid var(--border-color);
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
 }
 
 /* Map styles */
