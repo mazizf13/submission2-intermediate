@@ -1,4 +1,3 @@
-import { getFavoriteStories, removeFavoriteStory } from '../../utils/profile';
 import { generateStoryItemTemplate } from '../../templates';
 import IdbSource from '../../data/idb-source';
 
@@ -96,53 +95,66 @@ export default class FavoritePage {
           <i class="fas fa-exclamation-triangle favorite-icon"></i> 
           <h2>Failed to Load Offline Stories</h2>
           <p>There was an error loading offline stories. Please try again later.</p>
-          <button class="btn" onclick="this.loadOfflineStories()">Try Again</button>
+          <button class="btn" onclick="location.reload()">Try Again</button>
         </div>
       `;
     }
   }
 
-  loadFavoriteStories() {
-    const favoriteStories = getFavoriteStories();
+  async loadFavoriteStories() {
     const container = document.getElementById('favorite-stories-container');
 
-    if (!favoriteStories || favoriteStories.length === 0) {
+    try {
+      const favoriteStories = await IdbSource.getFavoriteStories();
+
+      if (!favoriteStories || favoriteStories.length === 0) {
+        container.innerHTML = `
+          <div class="favorite-message"> 
+            <h2>No Favorite Stories</h2>
+            <p>You haven't favorite any stories yet. Browse stories and click the favorite button to save them for later.</p>
+            <a href="#/home" class="btn">Browse Stories</a>
+          </div>
+        `;
+        return;
+      }
+
+      const html = favoriteStories.reduce((accumulator, story) => {
+        return accumulator.concat(
+          generateStoryItemTemplate({
+            ...story,
+            name: story.name,
+          }),
+        );
+      }, '');
+
+      container.innerHTML = `
+        <div class="stories-list">${html}</div>
+      `;
+
+      const storyItems = container.querySelectorAll('.story-item');
+      storyItems.forEach((item) => {
+        const storyId = item.dataset.storyid;
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-outline delete-favorite-btn';
+        deleteButton.innerHTML = '<i class="fas fa-heart"></i> Remove Favorite';
+        deleteButton.addEventListener('click', async () => {
+          if (confirm('Are you sure you want to remove this favorite?')) {
+            await IdbSource.removeFavoriteStory(storyId);
+            this.loadFavoriteStories();
+          }
+        });
+        item.querySelector('.story-item__body').appendChild(deleteButton);
+      });
+    } catch (error) {
+      console.error('Error loading favorite stories:', error);
       container.innerHTML = `
         <div class="favorite-message"> 
-          <h2>No Favorite Stories</h2>
-          <p>You haven't favorite any stories yet. Browse stories and click the favorite button to save them for later.</p>
-          <a href="#/home" class="btn">Browse Stories</a>
+          <i class="fas fa-exclamation-triangle favorite-icon"></i> 
+          <h2>Failed to Load Favorite Stories</h2>
+          <p>There was an error loading favorite stories. Please try again later.</p>
+          <button class="btn" onclick="location.reload()">Try Again</button>
         </div>
       `;
-      return;
     }
-
-    const html = favoriteStories.reduce((accumulator, story) => {
-      return accumulator.concat(
-        generateStoryItemTemplate({
-          ...story,
-          name: story.name,
-        }),
-      );
-    }, '');
-
-    container.innerHTML = `
-      <div class="stories-list">${html}</div>
-    `;
-
-    const storyItems = container.querySelectorAll('.story-item');
-    storyItems.forEach((item) => {
-      const storyId = item.dataset.storyid;
-      const deleteButton = document.createElement('button');
-      deleteButton.className = 'btn btn-outline delete-favorite-btn';
-      deleteButton.innerHTML = '<i class="fas fa-heart"></i> Remove Favorite';
-      deleteButton.addEventListener('click', () => {
-        if (confirm('Are you sure you want to remove this favorite?')) {
-          removeFavoriteStory(storyId);
-          this.loadFavoriteStories();
-        }
-      });
-      item.querySelector('.story-item__body').appendChild(deleteButton);
-    });
   }
 }

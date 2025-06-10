@@ -3,15 +3,10 @@ import { ACCESS_TOKEN_KEY } from '../config';
 
 export function getAccessToken() {
   try {
-    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-
-    if (accessToken === 'null' || accessToken === 'undefined') {
-      return null;
-    }
-
-    return accessToken;
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    return token && token !== 'null' && token !== 'undefined' ? token : null;
   } catch (error) {
-    console.error('getAccessToken: error:', error);
+    console.error('getAccessToken error:', error);
     return null;
   }
 }
@@ -21,7 +16,7 @@ export function putAccessToken(token) {
     localStorage.setItem(ACCESS_TOKEN_KEY, token);
     return true;
   } catch (error) {
-    console.error('putAccessToken: error:', error);
+    console.error('putAccessToken error:', error);
     return false;
   }
 }
@@ -31,9 +26,13 @@ export function removeAccessToken() {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     return true;
   } catch (error) {
-    console.error('getLogout: error:', error);
+    console.error('removeAccessToken error:', error);
     return false;
   }
+}
+
+export function getLogout() {
+  removeAccessToken();
 }
 
 const unauthenticatedRoutesOnly = ['/login', '/register'];
@@ -59,54 +58,4 @@ export function checkAuthenticatedRoute(page) {
   }
 
   return page;
-}
-
-export function getLogout() {
-  removeAccessToken();
-}
-
-export function getFavoriteStories() {
-  try {
-    const favoriteStories = localStorage.getItem('favoriteStories');
-    return favoriteStories ? JSON.parse(favoriteStories) : [];
-  } catch (error) {
-    console.error('getFavoriteStories: error:', error);
-    return [];
-  }
-}
-
-export function addFavoriteStory(story) {
-  try {
-    const favoriteStories = getFavoriteStories();
-    if (!favoriteStories.some((s) => s.id === story.id)) {
-      favoriteStories.push(story);
-      localStorage.setItem('favoriteStories', JSON.stringify(favoriteStories));
-    }
-    return true;
-  } catch (error) {
-    console.error('addFavoriteStory: error:', error);
-    return false;
-  }
-}
-
-export function removeFavoriteStory(storyId) {
-  try {
-    let favoriteStories = getFavoriteStories();
-    favoriteStories = favoriteStories.filter((story) => story.id !== storyId);
-    localStorage.setItem('favoriteStories', JSON.stringify(favoriteStories));
-    return true;
-  } catch (error) {
-    console.error('removeFavoriteStory: error:', error);
-    return false;
-  }
-}
-
-export function isStoryFavorite(storyId) {
-  try {
-    const favoriteStories = getFavoriteStories();
-    return favoriteStories.some((story) => story.id === storyId);
-  } catch (error) {
-    console.error('isStoryFavorite: error:', error);
-    return false;
-  }
 }

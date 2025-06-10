@@ -2,29 +2,37 @@ import { openDB } from 'idb';
 
 const DATABASE_NAME = 'd-story-db';
 const DATABASE_VERSION = 1;
-const OBJECT_STORE_NAME = 'stories';
+const STORIES_STORE = 'stories';
+const FAVORITES_STORE = 'favorites';
 
 const dbPromise = openDB(DATABASE_NAME, DATABASE_VERSION, {
   upgrade(database) {
-    database.createObjectStore(OBJECT_STORE_NAME, { keyPath: 'id' });
+    if (!database.objectStoreNames.contains(STORIES_STORE)) {
+      database.createObjectStore(STORIES_STORE, { keyPath: 'id' });
+    }
+
+    if (!database.objectStoreNames.contains(FAVORITES_STORE)) {
+      database.createObjectStore(FAVORITES_STORE, { keyPath: 'id' });
+    }
   },
 });
 
 const IdbSource = {
+  // OFFLINE STORIES
   async getStories() {
-    return (await dbPromise).getAll(OBJECT_STORE_NAME);
+    return (await dbPromise).getAll(STORIES_STORE);
   },
 
   async getStoryById(id) {
-    return (await dbPromise).get(OBJECT_STORE_NAME, id);
+    return (await dbPromise).get(STORIES_STORE, id);
   },
 
   async saveStory(story) {
-    return (await dbPromise).put(OBJECT_STORE_NAME, story);
+    return (await dbPromise).put(STORIES_STORE, story);
   },
 
   async deleteStory(id) {
-    return (await dbPromise).delete(OBJECT_STORE_NAME, id);
+    return (await dbPromise).delete(STORIES_STORE, id);
   },
 
   async searchStories(query) {
@@ -33,6 +41,24 @@ const IdbSource = {
       const searchableText = `${story.name} ${story.description}`.toLowerCase();
       return searchableText.includes(query.toLowerCase());
     });
+  },
+
+  // FAVORITE STORIES
+  async getFavoriteStories() {
+    return (await dbPromise).getAll(FAVORITES_STORE);
+  },
+
+  async addFavoriteStory(story) {
+    return (await dbPromise).put(FAVORITES_STORE, story);
+  },
+
+  async removeFavoriteStory(id) {
+    return (await dbPromise).delete(FAVORITES_STORE, id);
+  },
+
+  async isStoryFavorite(id) {
+    const result = await (await dbPromise).get(FAVORITES_STORE, id);
+    return !!result;
   },
 };
 
