@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import { storyMapper } from '../../data/api-mapper';
+import IdbSource from '../../data/idb-source';
 
 export default class StoryDetailsPresenter {
   #storyId;
@@ -108,37 +109,33 @@ export default class StoryDetailsPresenter {
     }
   }
 
-  showSaveButton() {
-    if (this.#isStorySaved()) {
+  async showSaveButton() {
+    const isSaved = await this.#isStorySaved();
+    if (isSaved) {
       this.#view.renderRemoveButton();
-      return;
+    } else {
+      this.#view.renderSaveButton();
     }
-
-    this.#view.renderSaveButton();
   }
 
-  #isStorySaved() {
-    const { isStoryFavorite } = require('../../utils/profile');
-    return isStoryFavorite(this.#storyId);
+  async #isStorySaved() {
+    return await IdbSource.isStoryFavorite(this.#storyId);
   }
 
   async toggleFavorite(story) {
-    const {
-      isStoryFavorite,
-      addFavoriteStory,
-      removeFavoriteStory,
-    } = require('../../utils/profile');
+    const isFavorite = await IdbSource.isStoryFavorite(this.#storyId);
 
-    if (isStoryFavorite(this.#storyId)) {
-      removeFavoriteStory(this.#storyId);
+    if (isFavorite) {
+      await IdbSource.removeFavoriteStory(this.#storyId);
       this.#view.renderSaveButton();
       return false;
     } else {
-      addFavoriteStory(story);
+      await IdbSource.addFavoriteStory(story);
       this.#view.renderRemoveButton();
       return true;
     }
   }
+
   getStoryId() {
     return this.#storyId;
   }
