@@ -20,7 +20,7 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url }) => url.origin === 'https://story-api.dicoding.dev/v1',
+  ({ url }) => url.origin === 'https://story-api.dicoding.dev',
   new NetworkFirst({
     cacheName: 'api-cache',
     plugins: [
@@ -66,22 +66,29 @@ registerRoute(
 );
 
 self.addEventListener('push', (event) => {
-  let notificationData = {
-    title: 'Notifikasi Baru',
-    options: {
-      body: 'Ada pembaruan dari D`story',
-      icon: '/images/icons/icon8-192.png',
+  const defaultTitle = 'Notifikasi Baru';
+  const defaultOptions = {
+    body: 'Ada pembaruan dari D`story',
+    icon: '/images/icons/icon8-192.png',
+    badge: '/images/icons/icon8-96.png',
+    data: {
+      url: '/',
     },
+  };
+
+  let notificationData = {
+    title: defaultTitle,
+    options: defaultOptions,
   };
 
   if (event.data) {
     try {
       const data = event.data.json();
       notificationData = {
-        title: data.title || notificationData.title,
+        title: data.title || defaultTitle,
         options: {
-          ...notificationData.options,
-          body: data.message || notificationData.options.body,
+          ...defaultOptions,
+          body: data.message || defaultOptions.body,
           data: {
             url: data.url || '/',
           },
@@ -103,25 +110,16 @@ self.addEventListener('notificationclick', (event) => {
   const urlToOpen = event.notification.data?.url || '/';
 
   event.waitUntil(
-    clients
-      .matchAll({
-        type: 'window',
-        includeUncontrolled: true,
-      })
-      .then((windowClients) => {
-        const hadWindowToFocus = windowClients.some((windowClient) => {
-          if (windowClient.url === urlToOpen) {
-            windowClient.focus();
-            return true;
-          }
-          return false;
-        });
-
-        if (!hadWindowToFocus) {
-          clients.openWindow(urlToOpen).catch((error) => {
-            console.error('Gagal membuka jendela:', error);
-          });
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
         }
-      }),
+      }
+
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    }),
   );
 });

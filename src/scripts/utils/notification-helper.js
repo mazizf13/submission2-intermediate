@@ -49,7 +49,7 @@ const NotificationHelper = {
       });
 
       const response = await this._sendSubscription(subscription);
-      if (!response.success) {
+      if (!response.success && response.error) {
         console.warn('Langganan dikirim tapi backend gagal simpan:', response);
       }
 
@@ -68,7 +68,7 @@ const NotificationHelper = {
         throw new Error('Token akses tidak ditemukan');
       }
 
-      const response = await fetch(`${BASE_URL}/notification/subscribe`, {
+      const response = await fetch(`${BASE_URL}/notifications/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
