@@ -20,10 +20,6 @@ const dbPromise = openDB(DATABASE_NAME, DATABASE_VERSION, {
 });
 
 const IdbSource = {
-  // ======================
-  // OFFLINE STORIES
-  // ======================
-
   async getStories() {
     try {
       const db = await dbPromise;
@@ -74,10 +70,6 @@ const IdbSource = {
       return [];
     }
   },
-
-  // ======================
-  // FAVORITE STORIES
-  // ======================
 
   async getFavoriteStories() {
     try {
