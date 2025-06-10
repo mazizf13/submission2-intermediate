@@ -25,6 +25,21 @@ const NotificationHelper = {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
       console.log('Service worker berhasil didaftarkan', registration);
+
+      if (!registration.active) {
+        await new Promise((resolve) => {
+          const sw = registration.installing || registration.waiting;
+          if (!sw) return resolve();
+
+          sw.addEventListener('statechange', function listener() {
+            if (sw.state === 'activated') {
+              sw.removeEventListener('statechange', listener);
+              resolve();
+            }
+          });
+        });
+      }
+
       return registration;
     } catch (error) {
       console.error('Gagal mendaftarkan service worker:', error);
